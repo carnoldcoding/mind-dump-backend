@@ -7,6 +7,6 @@ const {
 } = require('../../controllers/posts');
 
 // GET /api/posts — get all public posts
-router.get('/', getAllPosts);
+router.get('/', getAllPosts);  
 
 module.exports = router;

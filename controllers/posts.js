@@ -2,8 +2,13 @@ const { getDB } = require('../config/db');
 
 async function getAllPosts(req, res) {
   try {
+    const { type } = req.query;
     const db = getDB();
-    const posts = await db.collection('posts').find({ published: true }).toArray();
+    let filter = {}
+
+    if(type) filter.type = type;
+
+    const posts = await db.collection('Mind Data').find(filter).toArray();
     res.status(200).json(posts);
   } catch (error) {
     console.error('Error fetching posts:', error);
