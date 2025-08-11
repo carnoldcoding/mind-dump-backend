@@ -14,8 +14,7 @@ const corsOptions = {
       'http://127.0.0.1:5173', 
       'http://192.168.1.7:5173',
       'http://localhost:4173',
-      'https://syntheticsoul.me/',
-      'https://react-refactor.mind-dump-e5i.pages.dev/'
+      'https://syntheticsoul.me',
     ],
     credentials: true,
     optionsSuccessStatus: 200
