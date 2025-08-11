@@ -8,9 +8,19 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const corsOptions = {
+    origin: [
+      'http://localhost:5173',  
+      'http://127.0.0.1:5173', 
+      'http://192.168.1.7:5173'
+    ],
+    credentials: true,
+    optionsSuccessStatus: 200
+  };
+
 // Middleware
+app.use(cors(corsOptions));
 app.use(express.json());
-app.use(cors());
 
 // Base Routes
 app.use('/api/posts', require('./routes/public/posts'));

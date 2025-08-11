@@ -2,11 +2,14 @@ const { getDB } = require('../config/db');
 
 async function getAllPosts(req, res) {
   try {
-    const { type } = req.query;
+    const { type, slug, title } = req.query;
     const db = getDB();
     let filter = {}
 
     if(type) filter.type = type;
+    if(slug) filter.slug = slug;
+    if(title) filter.title = title;
+
 
     const posts = await db.collection('Mind Data').find(filter).toArray();
     res.status(200).json(posts);
