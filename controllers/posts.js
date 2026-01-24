@@ -101,9 +101,58 @@ async function removePost(req, res) {
   }
 }
 
+async function getAllGenres(req, res) {
+  try {
+    const db = getDB();
+    const { type } = req.query;
+
+    let filter = {};
+    let genreList = [];
+
+    if(type) filter.type = type;
+
+    const posts = await db.collection('Mind Data').find(filter).toArray();
+    
+    posts.forEach((post) => {
+      const filteredGenres = post.genres.filter((genre) => !genreList.includes(genre));
+      genreList.push(...filteredGenres);
+    })
+
+    res.status(200).json(genreList);
+  } catch (error) {
+    console.error('Error fetching genres:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+async function getAllCreators(req, res) {
+  try {
+    const db = getDB();
+    const { type } = req.query;
+
+    let filter = {};
+    let creatorList = [];
+
+    if(type) filter.type = type;
+    
+    const posts = await db.collection('Mind Data').find(filter).toArray();
+    
+    posts.forEach((post) => {
+      !creatorList.includes(post.creator) && creatorList.push(post.creator);
+    })
+
+    res.status(200).json(creatorList);
+  } catch (error) {
+    console.error('Error fetching creators:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
 module.exports = {
   getAllPosts,
   addPost,
   removePost,
-  updatePost
+  updatePost,
+  getAllGenres,
+  getAllCreators
 };
