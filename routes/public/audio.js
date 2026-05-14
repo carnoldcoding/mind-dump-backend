@@ -4,7 +4,10 @@ const multer = require('multer');
 const { uploadAudio, getAudio, deleteAudio } = require('../../controllers/audio');
 const { requireAuth } = require('../../middleware/auth');
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
+});
 
 router.post('/upload', requireAuth, upload.single('file'), uploadAudio);
 router.get('/', getAudio);
