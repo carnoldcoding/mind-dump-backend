@@ -48,11 +48,11 @@ app.use(express.json());
 
 // Base Routes
 app.use('/api/posts', require('./routes/public/posts'));
-app.use('/api/auth', require('./routes/public/auth'));
 app.use('/api/soul', require('./routes/public/soul'));
 app.use('/api/body', require('./routes/public/body'));
 app.use('/api/audio', require('./routes/public/audio'));
 app.use('/api/images', require('./routes/public/images'));
+app.use('/api/system', require('./routes/public/system'));
 
 // Start server after DB connects
 connectDB().then(() => {
