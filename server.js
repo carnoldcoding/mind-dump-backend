@@ -31,7 +31,7 @@ const corsOptions = {
     const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i;
     if (localhostRegex.test(origin)) return callback(null, true);
     const allowed = [
-      'http://192.168.1.7:5173',
+      'http://192.168.1.163:5173',
       'https://syntheticsoul.me',
     ];
     if (allowed.includes(origin)) return callback(null, true);
