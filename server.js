@@ -2,24 +2,12 @@ const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const cors = require('cors');
-const os = require('os');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-function getLocalIP() {
-  const interfaces = os.networkInterfaces();
-  for (const name of Object.keys(interfaces)) {
-    for (const iface of interfaces[name]) {
-      if (iface.family === 'IPv4' && !iface.internal) {
-        return iface.address;
-      }
-    }
-  }
-  return 'localhost';
-}
+const HOST = process.env.HOST || '127.0.0.1';
 
 // CORS: allow any localhost origin on any port, plus an explicit allowlist
 // Origin is called whenever an HTTP request is made, it determines whether or not to approve the 
@@ -28,14 +16,13 @@ function getLocalIP() {
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i;
+    const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|192\.168\.1\.163)(?::\d+)?$/i;
     if (localhostRegex.test(origin)) return callback(null, true);
     const allowed = [
-      'http://192.168.1.7:5173',
       'https://syntheticsoul.me',
     ];
     if (allowed.includes(origin)) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
+    return callback(null, false);
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
   credentials: true,
@@ -56,7 +43,7 @@ app.use('/api/system', require('./routes/public/system'));
 
 // Start server after DB connects
 connectDB().then(() => {
-  const server = app.listen(PORT, () => {
-    console.log(`Server running at: http://${getLocalIP()}:${PORT}`);
+  const server = app.listen(PORT, HOST, () => {
+    console.log(`Server running at: http://${HOST}:${PORT}`);
   });
 });
