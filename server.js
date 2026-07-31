@@ -7,6 +7,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const HOST = process.env.HOST || '127.0.0.1';
 
 // CORS: allow any localhost origin on any port, plus an explicit allowlist
 // Origin is called whenever an HTTP request is made, it determines whether or not to approve the 
@@ -42,7 +43,7 @@ app.use('/api/system', require('./routes/public/system'));
 
 // Start server after DB connects
 connectDB().then(() => {
-  const server = app.listen(PORT, '127.0.0.1', () => {
-    console.log(`Server running at: http://127.0.0.1:${PORT}`);
+  const server = app.listen(PORT, HOST, () => {
+    console.log(`Server running at: http://${HOST}:${PORT}`);
   });
 });
