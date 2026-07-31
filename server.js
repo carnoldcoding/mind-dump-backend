@@ -15,10 +15,9 @@ const PORT = process.env.PORT || 5000;
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i;
+    const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|192\.168\.1\.163)(?::\d+)?$/i;
     if (localhostRegex.test(origin)) return callback(null, true);
     const allowed = [
-      'http://192.168.1.163:5173',
       'https://syntheticsoul.me',
     ];
     if (allowed.includes(origin)) return callback(null, true);
