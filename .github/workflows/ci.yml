@@ -1,0 +1,47 @@
+# Runs on the way into dev and into main, on the Node version production
+# actually uses — testing on a runtime the server does not run is worth very
+# little.
+#
+# No lint job: this repo has no eslint config. Adding one would mean adopting a
+# style for a codebase that has never had one, which is a decision rather than
+# a chore, and not one to smuggle in through a CI change.
+
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      # Cheap proof that the app still assembles. The suite covers the pure
+      # normalisers; this catches a broken require or a syntax error in the
+      # wiring around them, which no test would.
+      - name: Load every route and controller
+        run: |
+          node -e "
+            require('./routes/public/posts');
+            require('./routes/public/images');
+            require('./routes/public/audio');
+            require('./routes/public/body');
+            require('./routes/public/soul');
+            require('./routes/public/system');
+            require('./routes/public/metadata');
+            console.log('all routes load');
+          "

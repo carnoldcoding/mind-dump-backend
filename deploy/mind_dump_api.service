@@ -1,0 +1,37 @@
+# Production unit for the API. Kept here rather than only in /etc/systemd so
+# the thing that runs the service is versioned alongside the service.
+#
+# Install:
+#   sudo cp deploy/mind_dump_api.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl restart mind_dump_api
+#
+# Two deliberate differences from the unit this replaces:
+#
+#   WorkingDirectory no longer points at the development checkout. Production
+#   ran directly out of the tree work happens in, so any `git checkout` swapped
+#   production's source files underneath it — harmless only because Node had
+#   already read them into memory, and a restart at the wrong moment would have
+#   started whatever branch happened to be checked out.
+#
+#   ExecStart names an exact Node binary. It used to run
+#   `bash -lc 'source nvm.sh && nvm use --lts && npm start'`, which meant the
+#   runtime could change major version on its own the next time a new LTS
+#   shipped — with no code change and no warning.
+
+[Unit]
+Description=Mind Dump API
+After=network.target
+
+[Service]
+Type=simple
+User=logia
+WorkingDirectory=/home/logia/apps/mind-dump-api
+Environment=NODE_ENV=production
+Environment=PORT=3000
+ExecStart=/home/logia/.nvm/versions/node/v24.14.0/bin/node server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
