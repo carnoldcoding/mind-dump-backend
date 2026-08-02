@@ -40,6 +40,7 @@ app.use('/api/body', require('./routes/public/body'));
 app.use('/api/audio', require('./routes/public/audio'));
 app.use('/api/images', require('./routes/public/images'));
 app.use('/api/system', require('./routes/public/system'));
+app.use('/api/metadata', require('./routes/public/metadata'));
 
 // Start server after DB connects
 connectDB().then(() => {
