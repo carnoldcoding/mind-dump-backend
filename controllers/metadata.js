@@ -44,7 +44,7 @@ async function searchMetadata(req, res) {
 /**
  * The full record for one candidate.
  *
- * RAWG's and TMDB's search results are thin — no developers, no platforms, no
+ * IGDB's and TMDB's search results are thin — no developers, no platforms, no
  * director, no genre names — so without this a captured Review would arrive
  * missing most of what the lookup exists to supply.
  */
