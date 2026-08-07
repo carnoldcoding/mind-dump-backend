@@ -1,4 +1,5 @@
 const { getDB } = require('../config/db');
+const mediaStore = require('../lib/mediaStore');
 
 async function getAllPosts(req, res) {
   try {
@@ -75,25 +76,75 @@ async function updatePost(req, res) {
 }
 
 
+/**
+ * Which media a Review owns, as filters for mediaStore.
+ *
+ * Pure, and separate from the deleting for that reason: getting this wrong
+ * either strands files in the bucket or takes down a cover another Review is
+ * still showing, and neither is visible from the response.
+ *
+ * A cover reaches its Review by either of two routes. Rows written by the
+ * backfill carry a post_id. Rows written by Capture carry none — the cover is
+ * stored before the Review exists, so there is no id to file it under — and
+ * are found instead by the URL the Review points at.
+ */
+function mediaFilters(review, { coverSharedWithOthers = false } = {}) {
+  const postId = String(review._id);
+
+  const cover = [{ post_id: postId }];
+  // Matching on the URL is only safe while this Review is the only one
+  // pointing at it. Nothing creates a shared cover today — every upload writes
+  // its own object — but a hand-edited image_path could, and deleting one
+  // Review must not blank another's artwork.
+  if (review.image_path && !coverSharedWithOthers) cover.push({ url: review.image_path });
+
+  return [
+    ['image', { post_id: postId }],
+    ['audio', { post_id: postId }],
+    ['cover', cover.length === 1 ? cover[0] : { $or: cover }],
+  ];
+}
+
+/**
+ * Deletes a Review and the media it owns.
+ *
+ * The media goes first. A failure part-way then leaves the Review in place to
+ * be deleted again, where the other order would drop the Review and strand
+ * whatever had not been reached — files nothing in the app can see or remove.
+ */
 async function removePost(req, res) {
   try {
     const db = getDB();
     const { slug } = req.body;
-    
+
     if (!slug) {
       return res.status(400).json({ message: 'Slug is required' });
     }
-    
-    const result = await db.collection('Mind Data').deleteOne({ slug: slug });
-    
-    if (result.deletedCount === 0) {
+
+    const review = await db.collection('Mind Data').findOne({ slug: slug });
+
+    if (!review) {
       return res.status(404).json({ message: 'Post not found' });
     }
-    
+
+    const coverSharedWithOthers = review.image_path
+      ? await db.collection('Mind Data').countDocuments(
+          { image_path: review.image_path, _id: { $ne: review._id } }, { limit: 1 }
+        ) > 0
+      : false;
+
+    const removed = {};
+    for (const [kind, filter] of mediaFilters(review, { coverSharedWithOthers })) {
+      removed[kind] = (await mediaStore.removeWhere(kind, filter)).length;
+    }
+
+    const result = await db.collection('Mind Data').deleteOne({ _id: review._id });
+
     res.status(200).json({
       message: "Post deleted successfully",
       slug: slug,
-      deletedCount: result.deletedCount
+      deletedCount: result.deletedCount,
+      removedMedia: removed
     });
   } catch (error) {
     console.error('Error deleting post:', error);
@@ -154,5 +205,8 @@ module.exports = {
   removePost,
   updatePost,
   getAllGenres,
-  getAllCreators
+  getAllCreators,
+  // Exported for its test. The deleting either side of it is one call each and
+  // needs a database to say anything; this is where the decisions are.
+  mediaFilters
 };

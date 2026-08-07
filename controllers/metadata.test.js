@@ -7,7 +7,7 @@ const { isAllowedCover } = require('./metadata');
 
 describe('which covers we will fetch', () => {
   it.each([
-    'https://media.rawg.io/media/games/nioh.jpg',
+    'https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7f.jpg',
     'https://image.tmdb.org/t/p/w500/inception.jpg',
     'https://covers.openlibrary.org/b/id/8231856-L.jpg',
   ])('fetches from %s', url => {
@@ -28,13 +28,13 @@ describe('which covers we will fetch', () => {
   });
 
   it('refuses plain http even on a host we do fetch from', () => {
-    expect(isAllowedCover('http://media.rawg.io/media/games/nioh.jpg')).toBe(false);
+    expect(isAllowedCover('http://images.igdb.com/igdb/image/upload/t_cover_big/co1r7f.jpg')).toBe(false);
   });
 
   // A hostname ending in an allowed one is not an allowed one.
   it('refuses a lookalike host', () => {
-    expect(isAllowedCover('https://media.rawg.io.evil.test/x.jpg')).toBe(false);
-    expect(isAllowedCover('https://notmedia.rawg.io/x.jpg')).toBe(false);
+    expect(isAllowedCover('https://images.igdb.com.evil.test/x.jpg')).toBe(false);
+    expect(isAllowedCover('https://notimages.igdb.com/x.jpg')).toBe(false);
   });
 
   it('refuses anything that is not a url', () => {

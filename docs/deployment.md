@@ -81,8 +81,16 @@ variable the server expects. `deploy.sh` refuses to run without it, because a
 server that starts with no database looks like a code fault rather than a
 missing file.
 
-The metadata lookup needs `RAWG_API_KEY` and `TMDB_API_KEY`; without them
-`/api/metadata/*` answers 502 and Capture falls back to recording titles.
+The metadata lookup needs `IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET` and
+`TMDB_API_KEY`; without them `/api/metadata/*` answers 502 and Capture falls
+back to recording titles.
+
+IGDB is the one provider whose credentials are not a key. They are a Twitch
+application's, exchanged for an access token the server caches in memory and
+renews about every sixty days — so a restart costs one extra call and nothing
+needs rotating on a schedule. Rotating the secret deliberately does not need a
+restart either: the running server is refused once, drops the dead token and
+fetches another.
 
 ## What is not automated
 
