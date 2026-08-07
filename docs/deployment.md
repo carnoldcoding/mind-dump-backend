@@ -68,11 +68,29 @@ cd ~/apps/mind-dump-api
 ```
 
 It fetches tags, checks the version out detached, installs production
-dependencies, restarts, and then polls `/api/system/probe` for 30 seconds. If
-the service does not answer, it puts the previous version back and restarts
-again — so a bad deploy reverts itself rather than leaving the API down.
+dependencies, restarts, and then polls `/api/system/probe` for 30 seconds. A
+version that cannot be installed, or that does not answer once restarted, is
+put back the way it was and restarted again — so a bad deploy reverts itself
+rather than leaving the API down, or leaving the checkout on a version whose
+dependencies were never installed.
 
 Rolling back deliberately is the same command with an older tag.
+
+`npm` is resolved through `NODE_BIN`, which defaults to the directory holding
+the node the systemd unit runs. Neither is left to `PATH`: nvm exports it from
+a shell rc, so whether `npm` is found at all depends on which shell the deploy
+happens to run from. Point `NODE_BIN` elsewhere when the runtime moves, and
+expect to change the unit's `ExecStart` at the same time.
+
+The probe only proves the server is answering. It says nothing about the
+metadata providers, so a release that is missing `IGDB_CLIENT_ID`,
+`IGDB_CLIENT_SECRET` or `TMDB_API_KEY` deploys green and fails only when
+something asks for a lookup. Check one by hand after a release that touches
+them:
+
+```bash
+curl -s 'localhost:3000/api/metadata/search?type=game&q=nioh'
+```
 
 ## Environment
 
