@@ -112,7 +112,9 @@ fetches another.
 
 ## What is not automated
 
-- **Nothing deploys on merge.** Releases are deliberate; `main` is release-only.
+- **Nothing deploys on merge.** Releases are deliberate; `main` is release-only,
+  and a deploy installs a tag rather than a branch. How a change reaches `main`
+  in the first place is [`branching.md`](./branching.md).
 - **CI does not reach this machine.** It runs tests on pull requests and stops
   there.
 - **The frontend is not served from this box** — nginx here has only the two API
