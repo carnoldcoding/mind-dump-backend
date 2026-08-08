@@ -53,3 +53,12 @@ loads, which no unit test covers.
   delete beside a loop of R2 deletes would quietly stop honouring it.
 - **There is no `version` in `package.json`.** The tag is the version — see
   `docs/branching.md`.
+- **A stale `post-merge` hook used to hijack `git pull` here.** It dated from
+  before production was separated from this checkout, and ran
+  `npm install --production` — deleting the dev dependencies, `vitest`
+  included — and then restarted the live service, which no longer runs from
+  this directory at all. It only ever appeared to work because `npm` is
+  usually absent from a non-login shell's `PATH`, so it failed harmlessly.
+  Disabled 2026-08-08, kept at `.git/hooks/post-merge.disabled-20260808`.
+  `.git/hooks` is not tracked, so a fresh clone will not have it — and will
+  not have this problem.
