@@ -190,16 +190,56 @@ function migrate() {
 
 // ── run ─────────────────────────────────────────────────────────────────────
 
-function main() {
-    const args = process.argv.slice(2);
-    if (args.includes("--commit")) {
-        console.error("--commit is SHELVED: it needs the dev database (spec §11). Dry run only for now.");
-        process.exit(2);
+// Write the migration output to Mongo (Mind Quests / Mind Disciplines). Guarded:
+// refuses any database whose name doesn't end in "-dev" unless --allow-prod is
+// passed, so learning collections can never land in prod by accident.
+async function commitToMongo(result, allowProd) {
+    require("dotenv").config();
+    const { MongoClient } = require("mongodb");
+    const dbName = process.env.DB_NAME;
+    if (!process.env.MONGO_URI || !dbName) throw new Error("MONGO_URI and DB_NAME must be set (backend .env)");
+    if (!dbName.endsWith("-dev") && !allowProd) {
+        throw new Error(`refusing to write to non-dev database "${dbName}" — pass --allow-prod to override`);
     }
+
+    const toDate = (v) => (v ? new Date(v) : null);
+    const questOps = result.quests.map((q) => ({
+        updateOne: {
+            filter: { _id: q._id },
+            update: { $set: { ...q, masteredAt: toDate(q.masteredAt), nextRecallDue: toDate(q.nextRecallDue), updatedAt: new Date() } },
+            upsert: true,
+        },
+    }));
+    const discOps = result.disciplines.map((d) => ({
+        updateOne: { filter: { _id: d._id }, update: { $set: { ...d, updatedAt: new Date() } }, upsert: true },
+    }));
+
+    const client = new MongoClient(process.env.MONGO_URI);
+    await client.connect();
+    try {
+        const db = client.db(dbName);
+        if (discOps.length) await db.collection("Mind Disciplines").bulkWrite(discOps);
+        if (questOps.length) await db.collection("Mind Quests").bulkWrite(questOps);
+        const q = await db.collection("Mind Quests").countDocuments();
+        const d = await db.collection("Mind Disciplines").countDocuments();
+        console.log(`committed to ${dbName}: Mind Quests=${q}, Mind Disciplines=${d}`);
+    } finally {
+        await client.close();
+    }
+}
+
+async function main() {
+    const args = process.argv.slice(2);
+    const result = migrate();
+
+    if (args.includes("--commit")) {
+        await commitToMongo(result, args.includes("--allow-prod"));
+        return;
+    }
+
     const outIdx = args.indexOf("--out");
     const out = outIdx >= 0 ? args[outIdx + 1] : path.join(os.tmpdir(), "grimoire-migration.json");
 
-    const result = migrate();
     fs.writeFileSync(out, JSON.stringify(result, null, 2));
 
     const r = result.report;
@@ -218,5 +258,5 @@ function main() {
     line(`\nfull output written to: ${out}`);
 }
 
-if (require.main === module) main();
-module.exports = { migrate, canon, parseWikilinks, RECONCILE, ASSIGN, SHELVED_ASSIGN };
+if (require.main === module) main().catch((e) => { console.error(e.message); process.exit(1); });
+module.exports = { migrate, canon, parseWikilinks, commitToMongo, RECONCILE, ASSIGN, SHELVED_ASSIGN };
