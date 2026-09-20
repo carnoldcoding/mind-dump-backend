@@ -43,16 +43,15 @@ const ASSIGN = {
     "dns-and-private-endpoints": { domain: "networking", discipline: "dns" },
     "ip-addressing-and-cidr": { domain: "networking", discipline: "tcp-ip-model" },
     "tcp-ip-model": { domain: "networking", discipline: "tcp-ip-model" }, // the overview note of that discipline
+    // User decision (2026-09-20): all networking. VNet pair → a cloud-networking
+    // discipline; DHCP sits with IP addressing in tcp-ip-model.
+    "vnet-peering": { domain: "networking", discipline: "cloud-networking" },
+    "vnets-and-subnets": { domain: "networking", discipline: "cloud-networking" },
+    "dhcp-vs-static-ip": { domain: "networking", discipline: "tcp-ip-model" },
 };
 
-// Lore-only concepts with NO fitting existing discipline — a new-taxonomy call
-// that belongs to the user. Imported to a provisional "unfiled" discipline so
-// their edges still resolve (graph stays complete), and FLAGGED for re-filing.
-const SHELVED_ASSIGN = {
-    "vnet-peering": { domain: "networking", discipline: "unfiled", suggest: "cloud-networking" },
-    "vnets-and-subnets": { domain: "networking", discipline: "unfiled", suggest: "cloud-networking" },
-    "dhcp-vs-static-ip": { domain: "sysadmin", discipline: "unfiled", suggest: "network-config" },
-};
+// No concepts are shelved for taxonomy any more — the user filed all of them.
+const SHELVED_ASSIGN = {};
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
@@ -214,15 +213,16 @@ async function commitToMongo(result, allowProd) {
         updateOne: { filter: { _id: d._id }, update: { $set: { ...d, updatedAt: new Date() } }, upsert: true },
     }));
 
+    const { COLLECTIONS } = require("../lib/mind/repository"); // one source of truth for names
     const client = new MongoClient(process.env.MONGO_URI);
     await client.connect();
     try {
         const db = client.db(dbName);
-        if (discOps.length) await db.collection("Mind Disciplines").bulkWrite(discOps);
-        if (questOps.length) await db.collection("Mind Quests").bulkWrite(questOps);
-        const q = await db.collection("Mind Quests").countDocuments();
-        const d = await db.collection("Mind Disciplines").countDocuments();
-        console.log(`committed to ${dbName}: Mind Quests=${q}, Mind Disciplines=${d}`);
+        if (discOps.length) await db.collection(COLLECTIONS.DISCIPLINES).bulkWrite(discOps);
+        if (questOps.length) await db.collection(COLLECTIONS.QUESTS).bulkWrite(questOps);
+        const q = await db.collection(COLLECTIONS.QUESTS).countDocuments();
+        const d = await db.collection(COLLECTIONS.DISCIPLINES).countDocuments();
+        console.log(`committed to ${dbName}: ${COLLECTIONS.QUESTS}=${q}, ${COLLECTIONS.DISCIPLINES}=${d}`);
     } finally {
         await client.close();
     }
