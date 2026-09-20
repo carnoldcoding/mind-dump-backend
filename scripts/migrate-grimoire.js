@@ -126,7 +126,7 @@ function migrate() {
                     _id: id, slug: cslug, domain, discipline: discSlug, title: q.title || cslug,
                     streak: q.streak ?? 0,
                     mastered: !!q.mastered,
-                    masteredAt: q.mastered_at || null,
+                    masteredAt: q.mastered_at && q.mastered_at !== "0001-01-01T00:00:00Z" ? q.mastered_at : null,
                     recallTier: q.mastered ? (q.review_tier ?? 0) : -1,
                     nextRecallDue: q.next_review_due && q.next_review_due !== "0001-01-01T00:00:00Z" ? q.next_review_due : null,
                     prestiged: !!q.prestiged,
