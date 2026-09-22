@@ -6,9 +6,10 @@ thin: the pure halves are covered and the I/O halves are not.
 
 Read these before making non-trivial changes:
 
-- [`docs/branching.md`](./docs/branching.md) — the git workflow, in full:
-  branches, releases, hotfixes, versioning, and what an agent may merge. The
-  same model governs the frontend repo.
+- The git workflow — branches, releases, hotfixes, versioning, and what an
+  agent may merge — lives in the global `~/.claude/CLAUDE.md` "Branching
+  strategy" section, the single source of truth for every repo. The same model
+  governs the frontend repo.
 - [`docs/deployment.md`](./docs/deployment.md) — how a release reaches the
   server, what `deploy.sh` does, what is in `.env`, and what is not automated.
 
@@ -52,7 +53,7 @@ loads, which no unit test covers.
   the object-then-record sequence that keeps R2 and Mongo in step; a bulk
   delete beside a loop of R2 deletes would quietly stop honouring it.
 - **There is no `version` in `package.json`.** The tag is the version — see
-  `docs/branching.md`.
+  the global `~/.claude/CLAUDE.md` "Branching strategy" section.
 - **A stale `post-merge` hook used to hijack `git pull` here.** It dated from
   before production was separated from this checkout, and ran
   `npm install --production` — deleting the dev dependencies, `vitest`
