@@ -16,7 +16,9 @@ const HOST = process.env.HOST || '127.0.0.1';
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|192\.168\.1\.163)(?::\d+)?$/i;
+    // Dev origins: loopback plus any host on the 192.168.1.0/24 LAN, any port —
+    // so the app opens from another box on the LAN, not just this one.
+    const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|192\.168\.1\.\d{1,3})(?::\d+)?$/i;
     if (localhostRegex.test(origin)) return callback(null, true);
     const allowed = [
       'https://syntheticsoul.me',
@@ -41,6 +43,7 @@ app.use('/api/audio', require('./routes/public/audio'));
 app.use('/api/images', require('./routes/public/images'));
 app.use('/api/system', require('./routes/public/system'));
 app.use('/api/metadata', require('./routes/public/metadata'));
+app.use('/api/mind', require('./routes/public/mind'));
 
 // Start server after DB connects
 connectDB().then(() => {

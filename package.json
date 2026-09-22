@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.127.0",
     "@aws-sdk/client-s3": "^3.1046.0",
     "@vendia/serverless-express": "^4.12.6",
     "cors": "^2.8.5",
@@ -9,7 +10,7 @@
     "multer": "^2.1.1"
   },
   "scripts": {
-    "dev": "node server.js",
+    "dev": "node --watch server.js",
     "start": "node server.js",
     "test": "vitest run"
   },
