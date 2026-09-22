@@ -6,7 +6,7 @@ const router = express.Router();
 // (ADR-0001). The "mind" learning feature is private; there is no public view.
 const {
     getGraph, getDue, getEvents,
-    createSession, getSession, postMessage, endSession,
+    createSession, getSession, postMessage, postAnswer, endSession,
 } = require('../../controllers/mind');
 
 // Reads for the map / patterns.
@@ -18,6 +18,7 @@ router.get('/events', getEvents);
 router.post('/sessions', createSession);
 router.get('/sessions/:id', getSession);
 router.post('/sessions/:id/messages', postMessage);
+router.post('/sessions/:id/answer', postAnswer);
 router.post('/sessions/:id/end', endSession);
 
 module.exports = router;

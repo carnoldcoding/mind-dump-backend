@@ -60,12 +60,16 @@ async function createSession(req, res) {
     } catch (err) { handleError(res, err, "createSession"); }
 }
 
-// GET /api/mind/sessions/:id — fetch a session (resume / history).
+// GET /api/mind/sessions/:id — fetch a session (resume / history). The
+// pendingQuestion holds the answer key for deterministic grading and must never
+// reach the client, so it is stripped from the response.
 async function getSession(req, res) {
     try {
         const s = await repo.getSession(req.params.id);
         if (!s) return res.status(404).json({ message: "session not found" });
-        res.status(200).json(s);
+        const { pendingQuestion, ...safe } = s;
+        void pendingQuestion;
+        res.status(200).json(safe);
     } catch (err) { handleError(res, err, "getSession"); }
 }
 
@@ -78,6 +82,22 @@ async function postMessage(req, res) {
     } catch (err) { handleError(res, err, "postMessage"); }
 }
 
+// POST /api/mind/sessions/:id/answer — answer the pending MC question. The
+// backend grades the click against the stored key and records it; the model
+// only teaches on the result. See broker.answer.
+async function postAnswer(req, res) {
+    try {
+        const { optionId } = req.body || {};
+        if (!optionId) return res.status(400).json({ message: "optionId is required" });
+        res.status(200).json(await broker.answer(repo, { sessionId: req.params.id, optionId }));
+    } catch (err) {
+        if (err.code === "no_pending_question") {
+            return res.status(409).json({ error: err.code, message: err.message });
+        }
+        handleError(res, err, "postAnswer");
+    }
+}
+
 // POST /api/mind/sessions/:id/end — close a session.
 async function endSession(req, res) {
     try {
@@ -86,4 +106,4 @@ async function endSession(req, res) {
     } catch (err) { handleError(res, err, "endSession"); }
 }
 
-module.exports = { getGraph, getDue, getEvents, createSession, getSession, postMessage, endSession };
+module.exports = { getGraph, getDue, getEvents, createSession, getSession, postMessage, postAnswer, endSession };
