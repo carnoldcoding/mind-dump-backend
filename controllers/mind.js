@@ -2,9 +2,8 @@
 // the Mongo repository and map domain errors to status codes. Gating is at
 // nginx (tailnet), same as the other System routes — see routes/public/system.js.
 //
-// SHELVED until the dev database + API key exist: these paths touch Mongo and
-// (for teach) the Anthropic API, so none have been run. The logic they wrap is
-// covered by lib/mind/*.test.js.
+// Teaching turns run headless Claude Code (see lib/mind/claudeCli.js). The
+// logic these wrap is covered by lib/mind/*.test.js.
 
 const repo = require("../lib/mind/repository");
 const service = require("../lib/mind/service");
@@ -23,9 +22,23 @@ const STATUS_FOR = {
     boss_not_available: 409,
 };
 
+// Failures of a teaching turn (broker + claudeCli). The message is shown in the
+// chat as-is; on a usage limit it carries Claude Code's reset time.
+const TURN_STATUS_FOR = {
+    turn_in_progress: 409,
+    claude_limit: 429,
+    claude_timeout: 504,
+    claude_auth: 503,
+    claude_failed: 502,
+};
+
 function handleError(res, err, where) {
     if (err instanceof DomainError) {
         return res.status(STATUS_FOR[err.code] || 400).json({ error: err.code, message: err.message });
+    }
+    if (TURN_STATUS_FOR[err.code]) {
+        console.error(`[mind] ${where}: ${err.code}: ${err.message}`);
+        return res.status(TURN_STATUS_FOR[err.code]).json({ error: err.code, message: err.message });
     }
     console.error(`Error in ${where}:`, err);
     return res.status(500).json({ message: "Server error" });
