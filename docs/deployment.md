@@ -110,6 +110,33 @@ needs rotating on a schedule. Rotating the secret deliberately does not need a
 restart either: the running server is refused once, drops the dead token and
 fetches another.
 
+## Claude Code (Mind teaching turns)
+
+Each Mind teaching turn runs headless Claude Code (`claude -p`) as `logia`,
+billed to the Claude subscription — see `lib/mind/claudeCli.js`. The box needs:
+
+1. Claude Code installed for `logia`, and logged in once by a person over SSH
+   (`claude`, then the login flow). The login is what ties turns to the
+   subscription.
+2. `MIND_CLAUDE_BIN` in `.env`, set to the binary's absolute path (for example
+   `/home/logia/.local/bin/claude`). The unit's environment has no useful
+   `PATH`, so `claude` alone may not be found.
+3. `proxy_read_timeout 200s;` on the nginx `/api/mind/` location. A turn can
+   take up to 180 seconds before the backend gives up; nginx's default of 60
+   would cut it off first.
+
+`ANTHROPIC_API_KEY` is no longer used. If it is still in `.env`, the backend
+strips it from Claude Code's environment, because Claude Code would otherwise
+bill the API key instead of the subscription.
+
+After a Claude Code update, or on a new box, check the call still works:
+
+```bash
+node scripts/probe-claude-cli.js
+```
+
+It reads Mind state, runs one turn, and writes nothing.
+
 ## What is not automated
 
 - **Nothing deploys on merge.** Releases are deliberate; `main` is release-only,
