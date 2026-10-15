@@ -28,6 +28,10 @@ HEALTH_TIMEOUT=30
 # not something to find out half-way through a release.
 NODE_BIN="${NODE_BIN:-$HOME/.nvm/versions/node/v24.14.0/bin}"
 NPM="$NODE_BIN/npm"
+# npm is itself a script that starts with `#!/usr/bin/env node`, so naming it
+# absolutely is not enough: `node` must be on PATH too. Over a plain
+# `ssh host './deploy.sh'` nvm's rc never runs, and npm fails to start.
+export PATH="$NODE_BIN:$PATH"
 
 say() { printf '\n▸ %s\n' "$1"; }
 die() { printf '\n✗ %s\n\n' "$1" >&2; exit 1; }
