@@ -30,7 +30,7 @@ Production is its **own checkout**, separate from wherever development happens:
 
 ```
 ~/apps/mind-dump-api      production — detached at a version tag
-~/repos/…/mind-dump-backend   development — branches, work in progress
+~/projects/…/mind-dump-backend   development — branches, work in progress
 ```
 
 They must stay separate. Production previously ran out of the development tree,
@@ -43,7 +43,7 @@ moment would have started whatever branch was checked out.
 ```bash
 git clone git@github.com:carnoldcoding/mind-dump-backend.git ~/apps/mind-dump-api
 cd ~/apps/mind-dump-api
-cp ~/repos/mind-dump-fullstack/mind-dump-backend/.env .env   # never tracked
+cp ~/projects/mind-dump-fullstack/mind-dump-backend/.env .env   # never tracked
 npm ci --omit=dev
 
 sudo cp deploy/mind_dump_api.service /etc/systemd/system/
