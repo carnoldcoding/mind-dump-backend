@@ -44,6 +44,7 @@ app.use('/api/images', require('./routes/public/images'));
 app.use('/api/system', require('./routes/public/system'));
 app.use('/api/metadata', require('./routes/public/metadata'));
 app.use('/api/mind', require('./routes/public/mind'));
+app.use('/api/finances', require('./routes/public/finances'));
 
 // Start server after DB connects
 connectDB().then(() => {
