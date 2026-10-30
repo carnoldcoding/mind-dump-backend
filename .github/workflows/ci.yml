@@ -43,5 +43,6 @@ jobs:
             require('./routes/public/soul');
             require('./routes/public/system');
             require('./routes/public/metadata');
+            require('./routes/public/finances');
             console.log('all routes load');
           "
