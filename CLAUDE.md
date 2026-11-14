@@ -21,6 +21,8 @@ its own and should not grow a second one.
 
 - `npm run dev` — the server, on `PORT` or 5000
 - `npm test` — Vitest
+- `npm run seed:body` — the Body Plan seed, as a dry run. Add `-- --commit` to write it
+  into the database that `DB_NAME` names. It refuses when a Plan exists
 
 `node` is not on `PATH` in a non-login shell on this machine; it lives at
 `~/.nvm/versions/node/v24.14.0/bin`.
